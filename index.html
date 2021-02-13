@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WebRTC Inverview Demo</title>
+
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .interview_container {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="interview_container">
+      <webrtc-interview />
+    </div>
+
+    <template id="interview_template">
+      <style>
+        .interview {
+          width: min-content;
+          padding: 10px;
+          border-radius: 6px;
+          box-shadow: 1px 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .interview .view_area {
+          display: flex;
+          margin-bottom: 12px;
+        }
+        .interview .control_area {
+          display: flex;
+          justify-content: center;
+        }
+
+        .view_area video {
+          background-color: rgb(200, 200, 200);
+        }
+        .view_area video:first-child {
+          margin-right: 12px;
+        }
+
+        .control_area button {
+          margin-right: 4px;
+        }
+        .control_area button:last-child {
+          margin-right: 0;
+        }
+      </style>
+      <div class="interview">
+        <div class="view_area">
+          <video id="remote_view" width="320" height="240" autoplay></video>
+          <video id="local_view" width="320" height="240" autoplay></video>
+        </div>
+        <div id="controls" class="control_area"></div>
+      </div>
+    </template>
+  </body>
+
+  <script src="/main.js"></script>
+</html>
