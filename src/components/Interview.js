@@ -8,27 +8,77 @@ class Interview extends HTMLElement {
 
     this.createButtons();
 
-    this.setAttribute('active', false);
+    this.setAttribute('status', 'prepare');
+
+    this.peerConnection = this.createInterviewConnection();
+    this.remoteId = this.getAttribute('connection');
+
+    this.prepare();
   }
 
   static get observedAttributes() {
-    return ['active'];
+    return ['status'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'active') {
+    if (name === 'status') {
       this.setControls(newValue);
     }
   }
 
   async handleStartInterview() {
-    await this.setLocalView();
-    this.setAttribute('active', true);
+    this.openInterviewConnection();
   }
 
   async handleStopInterview() {
-    await this.clearLocalView();
-    this.setAttribute('active', false);
+    this.setAttribute('status', 'ready');
+  }
+
+  async prepare() {
+    await this.setLocalView();
+    this.setRemoteView();
+    this.setAttribute('status', 'ready');
+  }
+
+  createInterviewConnection() {
+    const configuration = { iceServers: Interview.iceServers };
+    const peerConnection = new RTCPeerConnection(configuration);
+
+    Interview.connection.on('webrtc-message', async (message) => {
+      if (message.answer) this.handleRemoteAnswer(message.answer);
+      if (message.offer) this.handleRemoteOffer(message.offer);
+      if (message.iceCandidate) this.handleICECandidate(message.iceCandidate);
+    });
+
+    peerConnection.addEventListener('icecandidate', (event) => {
+      if (event.candidate) {
+        Interview.connection.emit('webrtc-request', {
+          id: this.remoteId,
+          iceCandidate: event.candidate,
+        });
+      }
+    });
+
+    // peerConnection.addEventListener('onnegotiationneeded', async (event) => {
+    //   await peerConnection.setLocalDescription();
+    //   Interview.connection.emit('webrtc-request', {
+    //     id: this.remoteId,
+    //     offer: peerConnection.localDescription,
+    //   });
+    // });
+
+    peerConnection.addEventListener('connectionstatechange', (event) => {
+      if (peerConnection.connectionState === 'connected') {
+        console.log('Peers connected!');
+      }
+    });
+
+    peerConnection.addEventListener('track', (event) => {
+      console.log('Add remote track', event.track);
+      this.remoteStream.addTrack(event.track, this.remoteStream);
+    });
+
+    return peerConnection;
   }
 
   async setLocalView() {
@@ -36,8 +86,8 @@ class Interview extends HTMLElement {
     const constraints = { video: true, audio: true };
     const localStream = await navigator.mediaDevices.getUserMedia(constraints);
     console.log('Got MediaStream:', localStream);
-    this.localStream = localStream;
     localViewElement.srcObject = localStream;
+    this.localStream = localStream;
   }
 
   async clearLocalView() {
@@ -49,12 +99,83 @@ class Interview extends HTMLElement {
     this.localStream = null;
   }
 
+  setRemoteView() {
+    const remoteViewElement = this.shadowRoot.getElementById('remote_view');
+    const remoteStream = new MediaStream();
+    console.log('Create MediaStream:', remoteStream);
+    remoteViewElement.srcObject = remoteStream;
+    this.remoteStream = remoteStream;
+  }
+
+  async openInterviewConnection() {
+    // await this.setLocalView();
+    this.setAttribute('status', 'working');
+    this.localStream
+      .getTracks()
+      .forEach((track) => this.peerConnection.addTrack(track));
+    const offer = await this.createConnectionOffer();
+    Interview.connection.emit('webrtc-request', {
+      id: this.remoteId,
+      offer: offer,
+    });
+  }
+
+  async handleRemoteOffer(offer) {
+    // await this.setLocalView();
+    this.setAttribute('status', 'working');
+    this.localStream
+      .getTracks()
+      .forEach((track) => this.peerConnection.addTrack(track));
+    this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await this.createConnectionAnswer();
+    console.log('Handle offer');
+    Interview.connection.emit('webrtc-request', {
+      id: this.remoteId,
+      answer: answer,
+    });
+  }
+
+  async handleRemoteAnswer(answer) {
+    const remoteDesc = new RTCSessionDescription(answer);
+    await this.peerConnection.setRemoteDescription(remoteDesc);
+    console.log('Handle answer');
+  }
+
+  async handleICECandidate(iceCandidate) {
+    try {
+      await this.peerConnection.addIceCandidate(iceCandidate);
+      console.log('Handle ICE Candidate');
+    } catch (e) {
+      console.error('Error adding received ice candidate', e);
+    }
+  }
+
+  async createConnectionOffer() {
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
+    return offer;
+  }
+
+  async createConnectionAnswer() {
+    const answer = await this.peerConnection.createAnswer();
+    await this.peerConnection.setLocalDescription(answer);
+    return answer;
+  }
+
   setControls(status) {
     const controls = this.shadowRoot.getElementById('controls');
     controls.firstChild && controls.removeChild(controls.firstChild);
     controls.appendChild(
-      status === 'true' ? this.stopInterviewButton : this.startInterviewButton
+      status === 'working'
+        ? this.stopInterviewButton
+        : this.startInterviewButton
     );
+    if (status === 'prepare') {
+      this.startInterviewButton.setAttribute('disabled', true);
+    }
+    if (status === 'ready') {
+      this.startInterviewButton.removeAttribute('disabled');
+    }
   }
 
   createButtons() {

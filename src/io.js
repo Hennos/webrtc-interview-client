@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
-function createConnection() {
-  const connection = io(`${window.location.hostname}:5454`);
+function createConnection(urlService) {
+  const connection = io(urlService);
 
   return connection;
 }

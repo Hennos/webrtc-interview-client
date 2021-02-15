@@ -19,9 +19,52 @@
     </style>
   </head>
   <body>
-    <div class="interview_container">
-      <webrtc-interview />
+    <div id="root_container" class="interview_container">
+      <clients-list />
+      <!-- <webrtc-interview /> -->
     </div>
+
+    <template id="clients_list_template">
+      <style>
+        .clients_list {
+          width: 200px;
+          height: 200px;
+          padding: 10px;
+          border-radius: 6px;
+          box-shadow: 1px 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .clients_list > .list_header {
+          margin-bottom: 6px;
+          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .clients_list > .list_content {
+          padding-left: 6px;
+        }
+
+        .list_content > .client_row {
+          overflow: hidden;
+          white-space: nowrap;
+          height: 20px;
+          margin-bottom: 6px;
+          text-indent: 6px;
+          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+        }
+
+        .list_content > .client_row:last-child {
+          margin-bottom: 0;
+        }
+
+        .list_content > .client_row:hover {
+          cursor: pointer;
+        }
+      </style>
+      <div class="clients_list">
+        <div class="list_header">Список пользователей</div>
+        <div id="client_list_content" class="list_content"></div>
+      </div>
+    </template>
 
     <template id="interview_template">
       <style>
