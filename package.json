@@ -1,5 +1,6 @@
 {
   "name": "webrtc-interview",
+  "homepage": "https://hennos.github.io/webrtc-interview-client/",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
