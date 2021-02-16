@@ -185,6 +185,15 @@ class Interview extends HTMLElement {
     this.remoteStream = remoteStream;
   }
 
+  clearRemoteView() {
+    const remoteViewElement = this.shadowRoot.getElementById('local_view');
+    remoteViewElement.srcObject = null;
+    this.remoteStream.getTracks().forEach(function (track) {
+      track.stop();
+    });
+    this.remoteStream = null;
+  }
+
   async openInterviewConnection() {
     // await this.setLocalView();
     this.setAttribute('status', 'working');
@@ -282,7 +291,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const serverConnection = (0,_io__WEBPACK_IMPORTED_MODULE_0__.default)('http://188.243.122.74:5454');
+const serverConnection = (0,_io__WEBPACK_IMPORTED_MODULE_0__.default)('wss://webrtc-interview.ru');
 _components_Interview__WEBPACK_IMPORTED_MODULE_1__.default.iceServers = [{
   url: 'stun:stun.l.google.com:19302'
 }, {
@@ -307,7 +316,7 @@ _components_Interview__WEBPACK_IMPORTED_MODULE_1__.default.iceServers = [{
   username: '28224511:1379330808'
 }];
 _components_Interview__WEBPACK_IMPORTED_MODULE_1__.default.connection = serverConnection;
-_components_ClientsList__WEBPACK_IMPORTED_MODULE_2__.default.clientsServer = 'http://188.243.122.74:5454';
+_components_ClientsList__WEBPACK_IMPORTED_MODULE_2__.default.clientsServer = 'https://webrtc-interview.ru';
 _components_ClientsList__WEBPACK_IMPORTED_MODULE_2__.default.connection = serverConnection;
 customElements.define('webrtc-interview', _components_Interview__WEBPACK_IMPORTED_MODULE_1__.default);
 customElements.define('clients-list', _components_ClientsList__WEBPACK_IMPORTED_MODULE_2__.default);
