@@ -107,6 +107,15 @@ class Interview extends HTMLElement {
     this.remoteStream = remoteStream;
   }
 
+  clearRemoteView() {
+    const remoteViewElement = this.shadowRoot.getElementById('local_view');
+    remoteViewElement.srcObject = null;
+    this.remoteStream.getTracks().forEach(function (track) {
+      track.stop();
+    });
+    this.remoteStream = null;
+  }
+
   async openInterviewConnection() {
     // await this.setLocalView();
     this.setAttribute('status', 'working');

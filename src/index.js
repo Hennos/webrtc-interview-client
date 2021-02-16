@@ -3,7 +3,7 @@ import createConnection from './io';
 import Interview from './components/Interview';
 import ClientsList from './components/ClientsList';
 
-const serverConnection = createConnection('http://188.243.122.74:5454');
+const serverConnection = createConnection('wss://webrtc-interview.ru');
 
 Interview.iceServers = [
   { url: 'stun:stun.l.google.com:19302' },
@@ -29,7 +29,7 @@ Interview.iceServers = [
 ];
 Interview.connection = serverConnection;
 
-ClientsList.clientsServer = 'http://188.243.122.74:5454';
+ClientsList.clientsServer = 'https://webrtc-interview.ru';
 ClientsList.connection = serverConnection;
 
 customElements.define('webrtc-interview', Interview);
